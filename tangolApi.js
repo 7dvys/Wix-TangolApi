@@ -195,8 +195,3 @@ class TourDetailsAndRates{
         return rates;
     }
 }
-
-export function fillWixDb(){
-    const wixCollection = new WixCollection();
-    wixCollection.fillWixDb();
-}
