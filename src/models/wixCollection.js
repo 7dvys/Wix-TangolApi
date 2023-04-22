@@ -1,4 +1,5 @@
 // import wixData from 'wix-data';
+import { ToursData } from "./ToursData";
 
 class WixCollection{
 

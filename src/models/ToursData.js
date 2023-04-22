@@ -1,9 +1,6 @@
-import { fetchGet } from './modules/fetch.js';
+import { fetchGet } from '../modules/fetchGet.js';
 
-const apiToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJjZW9fZWdAc3VubGl0amV0cy5jb20iLCJhdWQiOiI0NjYxOCJ9.H-4acwLUEMae63MU0iKd6bop-JMyYpdzBFns_gWd-v8"
-let apiUrl = "https://www.tangol.com/TangolApi/Tour";
-
-class ToursData{    
+export class ToursData{   
     constructor(){
         this.listToursData = [];
     }
@@ -17,21 +14,10 @@ class ToursData{
         const tourCountries = new TourCountries();
         const listOfCountries =await tourCountries.getCountries()
 
-        let promises = [];
-
-        for(const country of listOfCountries['ListCountries']){
-
-            const countryName = country['Description'];
-            const countryIsoCode = country['IsoCode'];
+        for(const key in listOfCountries['ListCountries']){
+            const countryIsoCode = listOfCountries['ListCountries'][key]['IsoCode'];
             
-            promises.push(this.appendDestinations(countryIsoCode)); // Destinations
-        }
-
-        let results = await Promise.all(promises);
-
-        for(const key in results){
-            const destinations = results[key];
-            listOfCountries['ListCountries'][key]['Destinations'] = destinations;
+            listOfCountries['ListCountries'][key]['Destinations'] = await this.appendDestinations(countryIsoCode); // Destinations
         }
 
         this.listToursData = listOfCountries['ListCountries'];
@@ -41,19 +27,10 @@ class ToursData{
         const countryDestinations = new CountryDestinations(countryIsoCode);
         let listOfDestinations = await countryDestinations.getDestinations();
 
-        let promises = [];
-
         for(const key in listOfDestinations['ListDestinations']){
             const destinationCode = listOfDestinations['ListDestinations'][key]['Id'];
 
-            promises.push(this.appendDestinationTours(destinationCode)); // Tours
-        }
-        
-        let results = await Promise.all(promises);
-        
-        for(const key in results){
-            const tours = results[key];
-            listOfDestinations['ListDestinations'][key]['Tours'] = tours
+            listOfDestinations['ListDestinations'][key]['Tours'] = await this.appendDestinationTours(destinationCode); // Tours
         }
 
         return listOfDestinations['ListDestinations'];
@@ -63,23 +40,12 @@ class ToursData{
         const destinationTours = new DestinationTours(destinationCode);
         let listOfTours = await destinationTours.getTours();
 
-        // let tourIdList = [];
-
         for(const key in listOfTours['ListTours']){
             const tourId = listOfTours['ListTours'][key]['TourId'];
-            // tourIdList.push(tourId);         
+
             listOfTours['ListTours'][key]['TourRates'] = await this.appendTourRates(tourId);
         }
-
-        // TourDetails viene con Tour
-        // const details = await this.appendTourDetailsList(tourIdList);
-        // Aparentemente no funciona el endpoint
-        // const rates = await this.appendTourRatesList(tourIdList);
-        // for(const key in tourIdList){
-        //     const id = tourIdList
-        //     // listOfTours['ListTours'][key]['Details'] = details[key]
-        //     listOfTours['ListTours'][key]['Rates'] = rates[key]
-        // }
+        console.log(listOfTours['ListTours'])
 
         return listOfTours['ListTours'];
     }
@@ -103,9 +69,7 @@ class ToursData{
     }
 }
 
-
-
-class TourCountries{
+export class TourCountries{
     
     constructor(){
         this.apiEndpoint = "/GetTourCountries";
