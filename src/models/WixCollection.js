@@ -18,6 +18,9 @@ export class WixCollections{
             console.error('Error: '+error);
             return false;
         }
+    }
+
+    async cleanWixDb(){
 
     }
 
@@ -91,7 +94,6 @@ export class WixCollections{
         elementsId:listToursIds
         }
 
-
         wixData.bulkSave(this.tableInformationId,[tableInformation])
         .then(results=>{
             if(results.errors.length != 0){
@@ -99,7 +101,6 @@ export class WixCollections{
             }
         })
         .catch(error=>{console.error(error)});
-
         
         const bulkMaxItemsPerPetition = 1000;
         const petitionTotalItems = listTours.length;
@@ -133,4 +134,6 @@ export class WixCollections{
         console.log('Tangol Tours Updated.')
 
     }
+
+
 }
