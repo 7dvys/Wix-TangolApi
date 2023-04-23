@@ -1,4 +1,6 @@
 import { fetchGet } from '../modules/fetchGet.js';
+import { fetchGet } from 'backend/TangolApi/modules/fetchGet.jsw';
+
 
 export class TangolApi{   
     
@@ -28,12 +30,12 @@ export class TangolApi{
             for(const key in jsonDestinations['ListDestinations']){
                 const destinationId = jsonDestinations['ListDestinations'][key]['Id'];
 
-                jsonDestinations['ListDestinations'][key]['_id']=destinationId;
+                jsonDestinations['ListDestinations'][key]['_id']=destinationId.toString();
+                jsonDestinations['ListDestinations'][key]['Id']=destinationId.toString();
                 listDestinationsIds.push(destinationId);
             }
             listDestinations.push(...jsonDestinations['ListDestinations'])
         }
-
         return {listDestinations,listDestinationsIds};
     }
 
@@ -47,13 +49,14 @@ export class TangolApi{
 
             for(const key in listToursPerDestination['ListTours']){
                 const tourId = listToursPerDestination['ListTours'][key]['TourId'];
-                listToursPerDestination['ListTours'][key]['_id']=tourId;
+                listToursPerDestination['ListTours'][key]['_id']=tourId.toString();
+                listToursPerDestination['ListTours'][key]['TourId']=tourId.toString();
+                listToursPerDestination['ListTours'][key]['DestinationId']=destinationId.toString();
                 
                 listToursIds.push(tourId);
             }
 
             listTours.push(...listToursPerDestination['ListTours']);
-            console.log(destinationId+' cargado');
         }
         return {listTours,listToursIds};
     }
@@ -77,7 +80,7 @@ export class TangolApi{
     }
 }
 
-export class TourCountries{
+class TourCountries{
     
     constructor(){
         this.apiEndpoint = "/GetTourCountries";

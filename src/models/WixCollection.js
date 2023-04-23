@@ -1,7 +1,7 @@
-// import wixData from 'wix-data';
-import { TangolApi } from "./TangolApi.js";
+import wixData from 'wix-data';
+import { TangolApi } from "backend/TangolApi/models/TangolApi.jsw";
 
-class WixCollections{
+export class WixCollections{
     constructor(){
         this.tableInformationId = 'TangolTablesResume'
     }
@@ -31,8 +31,21 @@ class WixCollections{
             elementsId:listIsoCodes
         }
         
-        // wixData.bulkSave(this.tableInformationId,tableInformation);
-        // wixData.bulkSave(tableId,listCountries);
+        wixData.bulkSave(this.tableInformationId,[tableInformation])
+        .then(results=>{
+            if(results.errors.length != 0){
+                console.log(results.errors)
+            }
+        })
+        .catch(error=>{console.error(error)});
+
+        wixData.bulkSave(tableId,listCountries)
+        .then(results=>{
+            if(results.errors.length != 0){
+                console.log(results.errors)
+            }
+        })
+        .catch(error=>{console.error(error)});
 
         console.log('Tangol Paises Updated.')
         return listIsoCodes;
@@ -48,9 +61,22 @@ class WixCollections{
             elementsId:listDestinationsIds
         }
 
-        // wixData.bulkSave(this.tableInformationId,tableInformation);
-        // wixData.bulkSave(tableId,listDestinations);
-       
+        wixData.bulkSave(this.tableInformationId,[tableInformation])
+        .then(results=>{
+            if(results.errors.length != 0){
+                    console.log(results.errors)
+            }
+        })
+        .catch(error=>{console.error(error)});
+
+        wixData.bulkSave(tableId,listDestinations)
+        .then(results=>{
+            if(results.errors.length != 0){
+                console.log(results.errors)
+            }
+        })
+        .catch(error=>{console.error(error)});
+    
         console.log('Tangol Destinos Updated.')
         return listDestinationsIds;
     }
@@ -65,13 +91,46 @@ class WixCollections{
         elementsId:listToursIds
         }
 
-        // wixData.bulkSave(this.tableInformationId,tableInformation);
-        // wixData.bulkSave(tableId,listDestinations);
+
+        wixData.bulkSave(this.tableInformationId,[tableInformation])
+        .then(results=>{
+            if(results.errors.length != 0){
+                    console.log(results.errors)
+            }
+        })
+        .catch(error=>{console.error(error)});
+
+        
+        const bulkMaxItemsPerPetition = 1000;
+        const petitionTotalItems = listTours.length;
+        const timesPetitions = Math.trunc(petitionTotalItems/bulkMaxItemsPerPetition);
+
+        for(let time = 0; time < timesPetitions; time++ ){
+            const a = time*1000;
+            const b = ((time+1)*1000)-1;
+
+            const listToursSlice = listTours.slice(a,b);
+
+            wixData.bulkSave(tableId,listToursSlice)
+            .then(results=>{
+                if(results.errors.length != 0){
+                    console.log(results.errors)
+                }
+            })
+            .catch(error=>{console.error(error)});
+        }
+
+        const listToursSlice = listTours.slice(timesPetitions*bulkMaxItemsPerPetition,petitionTotalItems);
+
+        wixData.bulkSave(tableId,listToursSlice)
+        .then(results=>{
+            if(results.errors.length != 0){
+                console.log(results.errors)
+            }
+        })
+        .catch(error=>{console.error(error)});
 
         console.log('Tangol Tours Updated.')
 
     }
 }
-
-const wixCollection = new WixCollections();
-wixCollection.fillWixDb();
