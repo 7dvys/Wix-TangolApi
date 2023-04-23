@@ -32,20 +32,24 @@ class FetchUrl{
     }
 }
 
-export async function fetchGet(endpoint,parameters={}){
+export async function fetchGet(endpoint,parameters={},body={}){
     const url = new FetchUrl(endpoint,parameters).url
     const token = apiToken;
     
-    const config = {
+    let config = {
         headers:{
             "Content-Type": "application/json",
             "Authorization":"Bearer "+token
         }        
     }
 
+    if(body != {} && typeof body == 'object'){
+        config['body']=JSON.stringify(body);
+        config['method']='POST';
+    }
+
     try {
         const response = await fetch(url,config);
-        console.log(url)
         if(response.ok){
             const jsonData = await response.json();
             return jsonData;

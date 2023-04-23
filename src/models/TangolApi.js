@@ -1,53 +1,61 @@
 import { fetchGet } from '../modules/fetchGet.js';
 
-export class ToursData{   
-    constructor(){
-        this.listToursData = [];
-    }
-
-    async getJsonTangolToursData(){
-        await this.appendCountries()
-        return this.listToursData;
-    }
+export class TangolApi{   
     
-    async appendCountries(){
+    async getListCountries(){
         const tourCountries = new TourCountries();
-        const listOfCountries =await tourCountries.getCountries()
+        const listCountries =await tourCountries.getCountries()
+        let listIsoCodes = [];
 
-        for(const key in listOfCountries['ListCountries']){
-            const countryIsoCode = listOfCountries['ListCountries'][key]['IsoCode'];
-            
-            listOfCountries['ListCountries'][key]['Destinations'] = await this.appendDestinations(countryIsoCode); // Destinations
+        for(const key in listCountries['ListCountries']){
+            const isoCode = listCountries['ListCountries'][key]['IsoCode'];
+            listIsoCodes.push(isoCode);
+            listCountries['ListCountries'][key]['_id'] = isoCode;            
         }
-
-        this.listToursData = listOfCountries['ListCountries'];
+        
+        return {listCountries:listCountries['ListCountries'],listIsoCodes};
     }
 
-    async appendDestinations(countryIsoCode){
-        const countryDestinations = new CountryDestinations(countryIsoCode);
-        let listOfDestinations = await countryDestinations.getDestinations();
+    async getDestinationsPerCountry(listIsoCodes){
+        
+        let listDestinationsIds = [];
+        let listDestinations = [];
+        for(const isoCode of listIsoCodes){
 
-        for(const key in listOfDestinations['ListDestinations']){
-            const destinationCode = listOfDestinations['ListDestinations'][key]['Id'];
+            const countryDestinations = new CountryDestinations(isoCode);
+            let jsonDestinations = await countryDestinations.getDestinations();
 
-            listOfDestinations['ListDestinations'][key]['Tours'] = await this.appendDestinationTours(destinationCode); // Tours
+            for(const key in jsonDestinations['ListDestinations']){
+                const destinationId = jsonDestinations['ListDestinations'][key]['Id'];
+
+                jsonDestinations['ListDestinations'][key]['_id']=destinationId;
+                listDestinationsIds.push(destinationId);
+            }
+            listDestinations.push(...jsonDestinations['ListDestinations'])
         }
 
-        return listOfDestinations['ListDestinations'];
+        return {listDestinations,listDestinationsIds};
     }
 
-    async appendDestinationTours(destinationCode){
-        const destinationTours = new DestinationTours(destinationCode);
-        let listOfTours = await destinationTours.getTours();
+    async getToursPerDestinations(listDestinationsIds){
 
-        for(const key in listOfTours['ListTours']){
-            const tourId = listOfTours['ListTours'][key]['TourId'];
+        let listTours = [];
+        let listToursIds = [];
+        for(const destinationId of listDestinationsIds){
+            const destinationTours = new DestinationTours(destinationId);
+            let listToursPerDestination = await destinationTours.getTours();
 
-            listOfTours['ListTours'][key]['TourRates'] = await this.appendTourRates(tourId);
+            for(const key in listToursPerDestination['ListTours']){
+                const tourId = listToursPerDestination['ListTours'][key]['TourId'];
+                listToursPerDestination['ListTours'][key]['_id']=tourId;
+                
+                listToursIds.push(tourId);
+            }
+
+            listTours.push(...listToursPerDestination['ListTours']);
+            console.log(destinationId+' cargado');
         }
-        console.log(listOfTours['ListTours'])
-
-        return listOfTours['ListTours'];
+        return {listTours,listToursIds};
     }
 
     async appendTourDetailsList(tourIdList){
@@ -105,7 +113,7 @@ class DestinationTours{
     }
 
     async getTours(){
-        const params = {"DestinationId":[this.destinationCode],"IncludeDetails":["Y"]};
+        const params = {"DestinationId":[this.destinationCode],"IncludeDetails":["N"]};
         const tours = await fetchGet(this.apiEndpoint,params);
         return tours;
     }
@@ -138,14 +146,15 @@ class TourDetailsAndRatesList{
 
 class TourDetailsAndRates{
     
-    constructor(tourId,languageCode = "ESP"){
+    constructor(tourId,languageCode = "ESP",currency = "USD"){
         this.apiDetailsEndpoint = "/GetTourDetails";
         this.apiRatesEndpoint = "/GetTourRates"
         this.tourId = tourId;
         this.params = {
             "tourId":[this.tourId],
             "LanguageCode":[languageCode],
-            "Currency":["USD"]
+            "Currency":[currency],
+            "IncludeDetails":["N"]
         }
     }
 
