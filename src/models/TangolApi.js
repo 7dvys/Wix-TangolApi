@@ -28,10 +28,10 @@ export class TangolApi{
             let jsonDestinations = await countryDestinations.getDestinations();
 
             for(const key in jsonDestinations['ListDestinations']){
-                const destinationId = jsonDestinations['ListDestinations'][key]['Id'];
+                const destinationId = jsonDestinations['ListDestinations'][key]['Id'].toString();
 
-                jsonDestinations['ListDestinations'][key]['_id']=destinationId.toString();
-                jsonDestinations['ListDestinations'][key]['Id']=destinationId.toString();
+                jsonDestinations['ListDestinations'][key]['_id']=destinationId;
+                jsonDestinations['ListDestinations'][key]['Id']=destinationId;
                 listDestinationsIds.push(destinationId);
             }
             listDestinations.push(...jsonDestinations['ListDestinations'])
@@ -48,9 +48,9 @@ export class TangolApi{
             let listToursPerDestination = await destinationTours.getTours();
 
             for(const key in listToursPerDestination['ListTours']){
-                const tourId = listToursPerDestination['ListTours'][key]['TourId'];
-                listToursPerDestination['ListTours'][key]['_id']=tourId.toString();
-                listToursPerDestination['ListTours'][key]['TourId']=tourId.toString();
+                const tourId = listToursPerDestination['ListTours'][key]['TourId'].toString();
+                listToursPerDestination['ListTours'][key]['_id']=tourId;
+                listToursPerDestination['ListTours'][key]['TourId']=tourId;
                 listToursPerDestination['ListTours'][key]['DestinationId']=destinationId.toString();
                 
                 listToursIds.push(tourId);

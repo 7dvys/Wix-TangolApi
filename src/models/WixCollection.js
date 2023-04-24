@@ -12,6 +12,7 @@ export class WixCollections{
             const listIsoCodes = await this.appendToTangolPaises();
             const listDestinationsIds = await this.appendToTangolDestinosPorPais(listIsoCodes);
             const listToursIds = await this.appendToTangolToursPorDestino(listDestinationsIds);
+            this.clearTangolTables();
 
             
         } catch (error) {
@@ -86,15 +87,15 @@ export class WixCollections{
 
     async appendToTangolToursPorDestino(listDestinationsIds){ // id: TangolToursPorDestinos
         const tableId = "TangolToursPorDestinos";
-       const {listTours,listToursIds} = await this.tangolApi.getToursPerDestinations(listDestinationsIds);
+        const {listTours,listToursIds} = await this.tangolApi.getToursPerDestinations(listDestinationsIds);
 
-       const tableInformation = {
+        const tableInformation = {
         _id:tableId,
         tableName:tableId,
         elementsId:listToursIds
         }
 
-        wixData.bulkSave(this.tableInformationId,[tableInformation])
+        await wixData.bulkSave(this.tableInformationId,[tableInformation])
         .then(results=>{
             if(results.errors.length != 0){
                     console.log(results.errors)
@@ -112,7 +113,7 @@ export class WixCollections{
 
             const listToursSlice = listTours.slice(a,b);
 
-            wixData.bulkSave(tableId,listToursSlice)
+            await wixData.bulkSave(tableId,listToursSlice)
             .then(results=>{
                 if(results.errors.length != 0){
                     console.log(results.errors)
@@ -123,7 +124,7 @@ export class WixCollections{
 
         const listToursSlice = listTours.slice(timesPetitions*bulkMaxItemsPerPetition,petitionTotalItems);
 
-        wixData.bulkSave(tableId,listToursSlice)
+        await wixData.bulkSave(tableId,listToursSlice)
         .then(results=>{
             if(results.errors.length != 0){
                 console.log(results.errors)
@@ -132,8 +133,33 @@ export class WixCollections{
         .catch(error=>{console.error(error)});
 
         console.log('Tangol Tours Updated.')
-
     }
 
+    async clearTangolTables(){
+        const tableResumeName = 'TangolTablesResume'
 
+        await wixData.query(tableResumeName).find()
+        .then(results => {
+            for(const item of results.items){
+                const tableId = item['_id'];
+                const listTableResumeIds = item['elementsId'];
+
+                wixData.query(tableId)
+                .not(
+                    wixData.query(tableId).hasSome('_id',listTableResumeIds)
+                )
+                .find()
+                .then(results=>{
+                    if(results.items.length > 0){
+                        const listItemsToDelete = results.items.map(item => item['_id']);
+                        wixData.bulkRemove(tableId,listItemsToDelete);
+                        console.log(`${tableId} items deleted:`,results.items);
+                    }
+                    console.log(`${tableId} cleaned.`)
+                })   
+                .catch(error => {console.log(error)})
+            }
+        })
+        .catch(error => {console.log(error)});
+    }
 }
