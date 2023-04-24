@@ -45,18 +45,24 @@ export class TangolApi{
         let listToursIds = [];
         for(const destinationId of listDestinationsIds){
             const destinationTours = new DestinationTours(destinationId);
-            let listToursPerDestination = await destinationTours.getTours();
 
-            for(const key in listToursPerDestination['ListTours']){
-                const tourId = listToursPerDestination['ListTours'][key]['TourId'].toString();
-                listToursPerDestination['ListTours'][key]['_id']=tourId;
-                listToursPerDestination['ListTours'][key]['TourId']=tourId;
-                listToursPerDestination['ListTours'][key]['DestinationId']=destinationId.toString();
-                
-                listToursIds.push(tourId);
+            for(const languageCode of ["ESP","ENG"]){
+
+                let listToursPerDestination = await destinationTours.getTours(languageCode);
+
+                for(const key in listToursPerDestination['ListTours']){
+                    const tourId = (listToursPerDestination['ListTours'][key]['TourId']+'_'+languageCode).toString();
+                    
+                    listToursPerDestination['ListTours'][key]['_id']=tourId;
+                    listToursPerDestination['ListTours'][key]['TourId']=tourId;
+                    listToursPerDestination['ListTours'][key]['DestinationId']=destinationId.toString();
+                    
+                    listToursIds.push(tourId);
+                }
+
+                listTours.push(...listToursPerDestination['ListTours']);
             }
 
-            listTours.push(...listToursPerDestination['ListTours']);
         }
         return {listTours,listToursIds};
     }
@@ -115,8 +121,12 @@ class DestinationTours{
         this.destinationCode = destinationCode;
     }
 
-    async getTours(){
-        const params = {"DestinationId":[this.destinationCode],"IncludeDetails":["N"]};
+    async getTours(languageCode="ESP",currency="USD"){
+        const params = {
+            "DestinationId":[this.destinationCode],
+            "LanguageCode":[languageCode],
+            "Currency":[currency],
+            "IncludeDetails":["N"]};
         const tours = await fetchGet(this.apiEndpoint,params);
         return tours;
     }
