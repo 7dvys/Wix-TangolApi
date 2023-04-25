@@ -1,5 +1,5 @@
-import fetch from 'node-fetch'
-// import {fetch} from 'wix-fetch';
+// import fetch from 'node-fetch' // on localhost nodejs
+import {fetch} from 'wix-fetch';
 
 const apiToken = "yourTangolApiToken"
 let apiUrl = "https://www.tangol.com/TangolApi/Tour";

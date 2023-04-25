@@ -1,0 +1,12 @@
+// FILE ON WIX BACKEND ONLY
+import {WixCollections} from 'backend/TangolApi/models/WixCollection.jsw'
+
+
+export function fillWixDb(){
+    const wixCollection = new WixCollections();
+    wixCollection.fillWixDb()
+} 
+
+
+
+

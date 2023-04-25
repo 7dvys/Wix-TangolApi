@@ -1,5 +1,6 @@
-import wixData from 'wix-data';
-import { TangolApi } from "backend/TangolApi/models/TangolApi.jsw";
+import wixData from 'wix-data'; //On wix
+// import { TangolApi } from '../models/TangolApi.js'; // On localhost NodeJs
+import { TangolApi } from "backend/TangolApi/models/TangolApi.jsw"; // On wix
 
 export class WixCollections{
     constructor(){
@@ -138,26 +139,50 @@ export class WixCollections{
     async clearTangolTables(){
         const tableResumeName = 'TangolTablesResume'
 
-        await wixData.query(tableResumeName).find()
-        .then(results => {
+        wixData.query(tableResumeName).find()
+        .then(async results => {
+            
             for(const item of results.items){
+
                 const tableId = item['_id'];
                 const listTableResumeIds = item['elementsId'];
 
                 wixData.query(tableId)
                 .not(
-                    wixData.query(tableId).hasSome('_id',listTableResumeIds)
+                wixData.query(tableId).hasSome('_id',listTableResumeIds)
                 )
-                .find()
-                .then(results=>{
-                    if(results.items.length > 0){
-                        const listItemsToDelete = results.items.map(item => item['_id']);
-                        wixData.bulkRemove(tableId,listItemsToDelete);
-                        console.log(`${tableId} items deleted:`,results.items);
+                .limit(1000)
+                .find()  
+                .then(async results=>{
+                    if(results.items.length > 0 ){
+                        let resultsToDelete = results;
+                        const listItemsToDelete = resultsToDelete.items.map(item => {
+                            return item._id;
+                        })
+                        wixData.bulkRemove(tableId,listItemsToDelete)
+                        .then((results)=>{
+                            console.log(`removed ${results.removedItemIds.length} of ${listItemsToDelete.length}`)
+                            console.log('items removed:',results.removedItemIds);
+                        })
+                        .catch(error => {console.error(error)});
+                        while(resultsToDelete.hasNext()){
+                            resultsToDelete = await resultsToDelete.next()
+                            const listItemsToDelete = resultsToDelete.items.map(item => {
+                                return item._id;
+                            })
+                            wixData.bulkRemove(tableId,listItemsToDelete)
+                            .then((results)=>{
+                                console.log(`removed ${results.removedItemIds.length} of ${listItemsToDelete.length}`)
+                                console.log('items removed:',results.removedItemIds);
+                            })
+                            .catch(error => {console.error(error)});
+                        }
                     }
-                    console.log(`${tableId} cleaned.`)
-                })   
+
+                    console.log(tableId+' cleaned.')
+                })
                 .catch(error => {console.log(error)})
+                        
             }
         })
         .catch(error => {console.log(error)});

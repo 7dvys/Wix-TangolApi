@@ -1,5 +1,5 @@
-import { fetchGet } from '../modules/fetchGet.js';
-import { fetchGet } from 'backend/TangolApi/modules/fetchGet.jsw';
+// import { fetchGet } from '../modules/fetchGet.js'; // On localhost nodeJs
+import { fetchGet } from 'backend/TangolApi/modules/fetchGet.jsw'; // on wix .jsw
 
 
 export class TangolApi{   
