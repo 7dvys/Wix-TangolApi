@@ -1,7 +1,7 @@
 import fetch from 'node-fetch'
 // import {fetch} from 'wix-fetch';
 
-const apiToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJjZW9fZWdAc3VubGl0amV0cy5jb20iLCJhdWQiOiI0NjYxOCJ9.H-4acwLUEMae63MU0iKd6bop-JMyYpdzBFns_gWd-v8"
+const apiToken = "yourToken"
 let apiUrl = "https://www.tangol.com/TangolApi/Tour";
 
 class FetchUrl{
